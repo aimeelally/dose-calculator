@@ -1,0 +1,25 @@
+table {
+  width: 100%;
+}
+
+.w-75 {
+  max-width: 75px;
+}
+
+mat-form-field {
+  width: 100px;
+}
+
+input {
+  text-align: right;
+}
+
+button {
+  margin: 0 8px 8px 0;
+}
+
+.container {
+  padding: 2em 1em;
+  display: flex;
+  justify-content: flex-end;
+}
