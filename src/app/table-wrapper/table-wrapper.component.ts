@@ -1,145 +1,130 @@
-import { DataSource } from '@angular/cdk/collections';
-import {
-  AfterContentInit,
-  Component,
-  ContentChildren,
-  Input,
-  QueryList,
-  ViewChild,
-  ContentChild,
-} from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import {
-  MatColumnDef,
-  MatFooterRowDef,
-  MatHeaderRowDef,
-  MatNoDataRow,
-  MatRowDef,
-  MatTable,
-} from '@angular/material/table';
-import { DosageForm } from '../calculator/calculator.model';
+// import { AfterContentInit, Component, OnInit } from '@angular/core';
+// import {
+//   FormArray,
+//   FormBuilder,
+//   FormControl,
+//   FormGroup,
+//   Validators,
+// } from '@angular/forms';
 
-@Component({
-  selector: 'app-table-wrapper',
-  templateUrl: './table-wrapper.component.html',
-  styleUrls: ['./table-wrapper.component.scss'],
-})
-export class TableWrapperComponent<T> implements AfterContentInit {
-  @ContentChildren(MatHeaderRowDef) headerRowDefs: QueryList<MatHeaderRowDef>;
-  @ContentChildren(MatFooterRowDef) footerRowDefs: QueryList<MatFooterRowDef>;
-  @ContentChildren(MatRowDef) rowDefs: QueryList<MatRowDef<T>>;
-  @ContentChildren(MatColumnDef) columnDefs: QueryList<MatColumnDef>;
-  @ContentChild(MatNoDataRow) noDataRow: MatNoDataRow;
+// @Component({
+//   selector: 'app-table-wrapper',
+//   templateUrl: './table-wrapper.component.html',
+//   styleUrls: ['./table-wrapper.component.scss'],
+// })
+// export class TableWrapperComponent implements OnInit {
+//   dosageForm: FormGroup;
 
-  @ViewChild(MatTable, { static: true }) table: MatTable<T>;
+//   constructor(private fb: FormBuilder) {}
 
-  @Input() columns: string[];
+//   ngOnInit() {
+//     this.dosageForm = this.fb.group({
+//       dosages: this.fb.array([]),
+//     });
+//     this.addRow();
+//   }
 
-  @Input() dataSource: DataSource<T>;
+//   private addRow() {
+//     const control = this.dosageForm.get('dosages') as FormArray;
+//     control.push(this.initiateForm());
+//   }
 
-  dosageForm: FormGroup;
+//   private initiateForm(): FormGroup {
+//     return this.fb.group({
+//       dosageToTake: new FormControl(null, [Validators.required]),
+//       dosageUnit: new FormControl(null, [Validators.required]),
+//       frequencyType: new FormControl('od', [Validators.required]),
+//       numDaysPerWeek: new FormControl(1, [Validators.required]),
+//       numWeeksPerYear: new FormControl(1, [Validators.required]),
+//     });
+//   }
 
-  constructor() {
-    this.dosageForm = this.createFormGroup();
-  }
+//   get getFormControls() {
+//     const control = this.dosageForm.get('dosages') as FormArray;
+//     return control;
+//   }
 
-  ngAfterContentInit() {
-    this.columnDefs.forEach((columnDef) => this.table.addColumnDef(columnDef));
-    this.rowDefs.forEach((rowDef) => this.table.addRowDef(rowDef));
-    this.headerRowDefs.forEach((headerRowDef) =>
-      this.table.addHeaderRowDef(headerRowDef)
-    );
-    this.footerRowDefs.forEach((footerRowDef) =>
-      this.table.addFooterRowDef(footerRowDef)
-    );
-    this.table.setNoDataRow(this.noDataRow);
+//   //////////////////////////
 
-    this.dosageForm
-      .get('frequencyType')
-      .valueChanges.subscribe((frequency: string) => {
-        if (frequency === 'ow') {
-          this.dosageForm.controls.numDaysPerWeek.disable();
-          this.dosageForm.controls.numDaysPerWeek.setValue(1);
-        } else {
-          this.dosageForm.controls.numDaysPerWeek.enable();
-        }
-      });
-  }
+//   frequencyTypes = ['od', 'bd', 'tds', 'qds', 'ow'];
 
-  //////////////////////////
+//   public toDispense: string = '';
 
-  frequencyTypes = ['od', 'bd', 'tds', 'qds', 'ow'];
+//   private createFormGroup(): FormGroup {
+//     return this.fb.group({
+//       dosageToTake: new FormControl(null, [Validators.required]),
+//       dosageUnit: new FormControl(null, [Validators.required]),
+//       frequencyType: new FormControl('od', [Validators.required]),
+//       numDaysPerWeek: new FormControl(1, [Validators.required]),
+//       numWeeksPerYear: new FormControl(1, [Validators.required]),
+//     });
+//   }
 
-  public toDispense: string = '';
+//   public revert() {
+//     console.log('revert something');
+//     // Resets to blank object
+//     // this.dosageForm.reset({
+//     //   dosageToTake: null,
+//     //   dosageUnit: null,
+//     //   frequencyType: 'od',
+//     //   numDaysPerWeek: 1,
+//     //   numWeeksPerYear: 1,
+//     // });
+//   }
 
-  private createFormGroup() {
-    return new FormGroup({
-      dosageToTake: new FormControl(null, [Validators.required]),
-      dosageUnit: new FormControl(null, [Validators.required]),
-      frequencyType: new FormControl('od', [Validators.required]),
-      numDaysPerWeek: new FormControl(1, [Validators.required]),
-      numWeeksPerYear: new FormControl(1, [Validators.required]),
-    });
-  }
+//   onSubmit() {
+//     const numTablets = +this.calculate().toFixed(2);
+//     this.toDispense = `Pharmacist should dispense ${numTablets} tablets`;
 
-  public revert() {
-    // Resets to blank object
-    this.dosageForm.reset({
-      dosageToTake: null,
-      dosageUnit: null,
-      frequencyType: 'od',
-      numDaysPerWeek: 1,
-      numWeeksPerYear: 1,
-    });
-  }
+//     // Make sure to create a deep copy of the form-model
+//     // const result: DosageForm = Object.assign({}, this.dosageForm.value);
+//     // result.personalData = Object.assign({}, result.personalData);
 
-  onSubmit() {
-    const numTablets = +this.calculate().toFixed(2);
-    this.toDispense = `Pharmacist should dispense ${numTablets} tablets`;
+//     // Do useful stuff with the gathered data
+//     // console.log(result);
+//   }
 
-    // Make sure to create a deep copy of the form-model
-    const result: DosageForm = Object.assign({}, this.dosageForm.value);
-    // result.personalData = Object.assign({}, result.personalData);
+//   public calculate(): number {
+//     return 4;
+//     // debugger;
+//     // console.log(this.dosageForm.value);
+//     // const {
+//     //   dosageToTake,
+//     //   dosageUnit,
+//     //   frequencyType,
+//     //   numDaysPerWeek,
+//     //   numWeeksPerYear,
+//     // } = this.dosageForm.getRawValue();
 
-    // Do useful stuff with the gathered data
-    console.log(result);
-  }
+//     // return (
+//     //   (dosageToTake / dosageUnit) *
+//     //   this.calculateFrequencyPerWeek(frequencyType, numDaysPerWeek) *
+//     //   numWeeksPerYear
+//     // );
+//   }
 
-  public calculate(): number {
-    console.log(this.dosageForm.value);
-    const {
-      dosageToTake,
-      dosageUnit,
-      frequencyType,
-      numDaysPerWeek,
-      numWeeksPerYear,
-    } = this.dosageForm.getRawValue();
+//   private calculateFrequencyPerWeek(
+//     frequencyType: string,
+//     numDaysPerWeek: number
+//   ): number {
+//     return this.getFrequency(frequencyType) * numDaysPerWeek;
+//   }
 
-    return (
-      (dosageToTake / dosageUnit) *
-      this.calculateFrequencyPerWeek(frequencyType, numDaysPerWeek) *
-      numWeeksPerYear
-    );
-  }
+//   private getFrequency(frequencyType: string): number {
+//     switch (frequencyType) {
+//       case 'od':
+//       case 'ow':
+//         return 1;
+//       case 'bd':
+//         return 2;
+//       case 'tds':
+//         return 3;
+//       case 'qds':
+//         return 4;
+//     }
+//   }
 
-  private calculateFrequencyPerWeek(
-    frequencyType: string,
-    numDaysPerWeek: number
-  ): number {
-    return this.getFrequency(frequencyType) * numDaysPerWeek;
-  }
-
-  private getFrequency(frequencyType: string): number {
-    switch (frequencyType) {
-      case 'od':
-      case 'ow':
-        return 1;
-      case 'bd':
-        return 2;
-      case 'tds':
-        return 3;
-      case 'qds':
-        return 4;
-    }
-  }
-}
+//   public remove(index: number): void {
+//     console.log(index);
+//   }
+// }

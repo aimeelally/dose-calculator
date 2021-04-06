@@ -6,18 +6,20 @@
 //   text: string = '';
 // }
 
-export class DosageForm {
-  dosageToTake: number = 0;
-  dosageUnit: number = 0;
-  frequencyType: any = ['od', 'bd', 'tds', 'qds', 'ow'];
-  numDaysPerWeek: number = 1;
-  numWeeksPerYear: number = 1;
-}
+// export class DosageForm {
+//   dosageToTake: number = 0;
+//   dosageUnit: number = 0;
+//   frequencyType: any = ['od', 'bd', 'tds', 'qds', 'ow'];
+//   numDaysPerWeek: number = 1;
+//   numWeeksPerYear: number = 1;
+// }
 
 export class Dosage {
-  dosageToTake: number = 0;
-  dosageUnit: number = 0;
-  frequencyType: any = ['od', 'bd', 'tds', 'qds', 'ow'];
+  id: number;
+  dosageToTake: number;
+  dosageUnit: number;
+  // frequencyType: string[] = ['od', 'bd', 'tds', 'qds', 'ow'];
+  frequencyType: string;
   numDaysPerWeek: number = 1;
   numWeeksPerYear: number = 1;
 }
