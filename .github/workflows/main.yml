@@ -20,4 +20,4 @@ jobs:
           aws-region: eu-west-1
       - uses: actions/checkout@v2
       - run: npm install
-      - run: npm run build --prod && aws s3 sync dist/. s3://aimeelally.com/dose-calculator/ aws cloudfront create-invalidation --distribution-id E14F42M8EZ5A06 --paths '/dose-calculator/*'
+      - run: npm run build --prod && aws s3 sync dist/. s3://aimeelally.com/dose-calculator/ && aws cloudfront create-invalidation --distribution-id E14F42M8EZ5A06 --paths '/dose-calculator/*'
