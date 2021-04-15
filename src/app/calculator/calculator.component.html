@@ -1,8 +1,14 @@
 <header>
   <mat-toolbar color="primary">
-    <span>Dosage Calculator</span>
+    <h1>Dosage Calculator</h1>
   </mat-toolbar>
 </header>
+
+<h3>
+  Disclaimer: this is untested and unverified and built by someone who does not
+  maths, so please do not trust the calculations blindly. If you find any issues
+  <s>blame</s> tell Chloe.
+</h3>
 
 <div class="container">
   <form [formGroup]="dosageForm" (ngSubmit)="onSubmit()" novalidate>
@@ -12,7 +18,12 @@
       <thead>
         <tr class="mat-header-row">
           <th class="mat-header-cell">Dosage needed</th>
-          <th class="mat-header-cell">Strength available</th>
+          <th
+            class="mat-header-cell"
+            title="use comma separated values to include multiple available dosage strengths and calculator will return optimum combo"
+          >
+            Strength available
+          </th>
           <th class="mat-header-cell">Frequency</th>
           <th class="mat-header-cell">For N days</th>
           <th class="mat-header-cell">For N weeks</th>
@@ -37,7 +48,7 @@
             <!-- UNIT -->
             <td class="mat-cell">
               <mat-form-field>
-                <input matInput type="number" formControlName="dosageUnit" />
+                <input matInput type="text" formControlName="dosageUnit" />
                 <span matSuffix>mg</span>
               </mat-form-field>
             </td>
