@@ -14,28 +14,27 @@ import { Dosage } from './calculator.model';
   styleUrls: ['./calculator.component.scss'],
 })
 export class CalculatorComponent implements OnInit {
-  dosageForm: FormGroup;
+  public dosageForm: FormGroup;
 
   public frequencyTypes = ['od', 'bd', 'tds', 'qds', 'ow'];
 
-  public toDispense: string = '';
+  public toDispense = '';
+  public errMessage = '';
 
   constructor(private fb: FormBuilder) {}
 
   ngOnInit() {
-    this.dosageForm = this.fb.group({
-      dosages: this.fb.array([]),
-    });
-    this.addRow();
+    this.initDosageForm();
+  }
+
+  get getFormControls() {
+    return this.dosageForm.get('dosages') as FormArray;
   }
 
   public addRow() {
-    this.toDispense = null;
-
-    const control = this.dosageForm.get('dosages') as FormArray;
-    const newDose = this.initiateForm();
-
-    control.push(newDose);
+    this.toDispense = '';
+    this.errMessage = '';
+    this.getFormControls.push(this.initFormRow());
   }
 
   public doseChanged(event, group): void {
@@ -47,87 +46,92 @@ export class CalculatorComponent implements OnInit {
     }
   }
 
-  private initiateForm(): FormGroup {
+  private initDosageForm() {
+    this.dosageForm = this.fb.group({
+      dosages: this.fb.array([this.initFormRow()], [Validators.required]),
+      dosageUnit: new FormControl(null, [Validators.required]),
+    });
+  }
+
+  private initFormRow(): FormGroup {
     return this.fb.group({
       id: this.makeid(),
       dosageToTake: new FormControl(null, [Validators.required]),
-      dosageUnit: new FormControl(null, [Validators.required]),
+      // dosageUnit: new FormControl(null, [Validators.required]),
       frequencyType: new FormControl('od', [Validators.required]),
       numDaysPerWeek: new FormControl(1, [Validators.required]),
       numWeeksPerYear: new FormControl(1, [Validators.required]),
     });
   }
 
-  get getFormControls() {
-    return this.dosageForm.get('dosages') as FormArray;
-  }
-
-  public revert() {
-    console.log('revert something');
-    // Resets to blank object
-    // this.dosageForm.reset({
-    //   dosageToTake: null,
-    //   dosageUnit: null,
-    //   frequencyType: 'od',
-    //   numDaysPerWeek: 1,
-    //   numWeeksPerYear: 1,
-    // });
+  public revert(): void {
+    this.toDispense = '';
+    this.errMessage = '';
+    this.initDosageForm();
   }
 
   onSubmit() {
-    console.log(this.dosageForm.value);
+    this.errMessage = '';
+    this.toDispense = '';
+    const rowBreakdown = this.calculateBreakdown();
+    this.resetRowValidation();
 
-    // const numTablets = +this.calculate().toFixed(2);
-    // this.toDispense = `Pharmacist should dispense ${numTablets} tablets`;
-    // const calculateBreakdown = this.calculateBreakdown();
-    // debugger;
-
-    const totalDosageBreakdown = this.calculateBreakdown().reduce(
-      (pre, curr) => {
-        for (var key in curr) {
-          if (pre[key]) {
-            pre[key] += curr[key];
-          } else {
-            pre[key] = curr[key];
-          }
-        }
-        return pre;
-      },
-      {}
-    );
-
-    if (
-      Object.keys(totalDosageBreakdown).length === 0 &&
-      totalDosageBreakdown.constructor === Object
-    ) {
-      this.toDispense =
-        'Cannot calculate a dispensable dosage based on the current inputs.';
+    if (this.hasInvalidRows(rowBreakdown)) {
+      this.highlightInvalidRows(rowBreakdown);
+      this.errMessage =
+        'Cannot calculate a dispensable dosage based on the current inputs. Fixed the affected rows and try again.';
       return;
     }
-    let dispenseString = 'To dispense: \n\n';
-    for (var key in totalDosageBreakdown) {
-      dispenseString += `${totalDosageBreakdown[key]} x ${key}mg \n\n`;
-    }
-    this.toDispense = dispenseString;
-    // Make sure to create a deep copy of the form-model
-    // const result: DosageForm = Object.assign({}, this.dosageForm.value);
-    // result.personalData = Object.assign({}, result.personalData);
 
-    // Do useful stuff with the gathered data
-    // console.log(result);
+    const totalDosageBreakdown = rowBreakdown.reduce((pre, curr) => {
+      for (var key in curr) {
+        if (pre[key]) {
+          pre[key] += curr[key];
+        } else {
+          pre[key] = curr[key];
+        }
+      }
+      return pre;
+    }, {});
+
+    for (var key in totalDosageBreakdown) {
+      this.toDispense += `${totalDosageBreakdown[key]} x ${key}mg \n\n`;
+    }
+  }
+
+  private hasInvalidRows(rows: { [key: string]: number }[]): boolean {
+    return rows.some((row) => row === null);
+  }
+
+  private highlightInvalidRows(rows: { [key: string]: number }[]): void {
+    return rows.forEach((row, i) => {
+      if (row === null) {
+        this.getFormControls.controls[i].setErrors({ incorrect: true });
+      }
+    });
+  }
+
+  private resetRowValidation(): void {
+    return this.getFormControls.controls.forEach((c) => c.setErrors(null));
   }
 
   public calculateBreakdown(): { [key: string]: number }[] {
+    this.toDispense = '';
+    const dosageUnit = this.dosageForm.get('dosageUnit');
     return this.dosageForm.getRawValue().dosages.map((dosage) => {
       const {
         dosageToTake,
-        dosageUnit,
+        // dosageUnit,
         frequencyType,
         numDaysPerWeek,
         numWeeksPerYear,
       } = dosage;
 
-      const dosageUnitArray = dosageUnit
+      if (!dosageUnit) {
+        return null;
+      }
+
+      const dosageUnitArray = dosageUnit.value
         .split(/[ ,]+/)
         .map((value) => parseFloat(value))
         .filter((value) => value);
@@ -138,6 +142,12 @@ export class CalculatorComponent implements OnInit {
       let dosageBreakdown = this.calculateEachDosageBreakdown(
         optimumDosageBreakdown
       );
+
+      if (optimumDosageBreakdown.length === 0) {
+        // cannot calc dosage for this row, return null so row can be highlighted later
+        return null;
+      }
+
       const frequencyPerWeek = this.calculateFrequencyPerWeek(
         frequencyType,
         numDaysPerWeek
@@ -205,9 +215,10 @@ export class CalculatorComponent implements OnInit {
     }
   }
 
-  deleteRow(index: number) {
-    const control = this.dosageForm.get('dosages') as FormArray;
-    control.removeAt(index);
+  public deleteRow(index: number) {
+    this.toDispense = '';
+    this.errMessage = '';
+    this.getFormControls.removeAt(index);
   }
 
   private makeid() {

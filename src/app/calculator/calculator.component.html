@@ -4,30 +4,50 @@
   </mat-toolbar>
 </header>
 
-<h3>
-  Disclaimer: this is untested and unverified and built by someone who does not
-  maths, so please do not trust the calculations blindly. If you find any issues
-  <s>blame</s> tell Chloe.
-</h3>
-
 <div class="container">
   <form [formGroup]="dosageForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="btn-container">
+      <mat-form-field appearance="outline">
+        <mat-label>Dosage strengths available</mat-label>
+        <input
+          matInput
+          placeholder="e.g. 25, 150"
+          formControlName="dosageUnit"
+        />
+        <span matSuffix class="strength-suffix">mg</span>
+      </mat-form-field>
+
+      <div>
+        <button type="button" mat-raised-button (click)="revert()">
+          Reset all
+        </button>
+
+        <button mat-raised-button type="button" (click)="addRow()">
+          Add row to taper dosage
+        </button>
+
+        <button mat-raised-button color="primary" type="submit">
+          Calculate dosage required
+        </button>
+      </div>
+    </div>
+
     <table class="mat-table mat-elevation-z8">
       <ng-content></ng-content>
 
       <thead>
         <tr class="mat-header-row">
           <th class="mat-header-cell">Dosage needed</th>
-          <th
+          <!-- <th
             class="mat-header-cell"
             title="use comma separated values to include multiple available dosage strengths and calculator will return optimum combo"
           >
             Strength available
-          </th>
+          </th> -->
           <th class="mat-header-cell">Frequency</th>
           <th class="mat-header-cell">For N days</th>
           <th class="mat-header-cell">For N weeks</th>
-          <th class="mat-header-cell">Remove row</th>
+          <th class="mat-header-cell"></th>
         </tr>
       </thead>
 
@@ -36,7 +56,15 @@
           formArrayName="dosages"
           *ngFor="let group of getFormControls.controls; let i = index"
         >
-          <tr [formGroupName]="i" class="mat-row">
+          <tr
+            [formGroupName]="i"
+            class="mat-row {{
+              group.get('dosageToTake').dirty &&
+              dosageForm.get('dosageUnit').dirty
+                ? 'canValidate'
+                : null
+            }}"
+          >
             <!-- DOSAGE -->
             <td class="mat-cell">
               <mat-form-field>
@@ -46,12 +74,12 @@
             </td>
 
             <!-- UNIT -->
-            <td class="mat-cell">
+            <!-- <td class="mat-cell">
               <mat-form-field>
                 <input matInput type="text" formControlName="dosageUnit" />
                 <span matSuffix>mg</span>
               </mat-form-field>
-            </td>
+            </td> -->
 
             <!-- FREQUENCY -->
             <td class="mat-cell">
@@ -95,33 +123,30 @@
             </td>
 
             <td class="mat-cell">
-              <mat-icon class="delete" (click)="deleteRow(i)"
-                >delete_forever</mat-icon
+              <button
+                class="delete-row"
+                (click)="deleteRow(i)"
+                [disabled]="i === 0 && getFormControls.controls.length === 1"
               >
+                <mat-icon>delete_forever</mat-icon>
+              </button>
             </td>
           </tr>
         </ng-container>
-        <ng-container *ngIf="toDispense !== null">
-          <tr class="mat-row">
-            <td class="mat-cell" colspan="5">{{ toDispense }}</td>
-          </tr></ng-container
-        >
       </tbody>
     </table>
 
-    <div class="container">
-      <button mat-raised-button type="submit" [disabled]="!dosageForm.valid">
-        Calculate dosage required
-      </button>
-      <button mat-raised-button (click)="addRow()">Add row</button>
-      <button
-        mat-raised-button
-        type="reset"
-        (click)="revert()"
-        [disabled]="!dosageForm.valid"
-      >
-        Revert
-      </button>
-    </div>
+    <ng-container *ngIf="toDispense">
+      <div>
+        <h3>To Dispense:</h3>
+        <pre>{{ toDispense }}</pre>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="errMessage">
+      <p>
+        {{ errMessage }}
+      </p>
+    </ng-container>
   </form>
 </div>

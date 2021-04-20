@@ -50,12 +50,13 @@
 //         {
 //           id: 'wer',
 //           dosageToTake: 75,
-//           dosageUnit: '25,50',
+//           // dosageUnit: '25,50',
 //           frequencyType: 'od',
 //           numDaysPerWeek: 1,
 //           numWeeksPerYear: 1,
 //         },
 //       ],
+//       dosageUnit: '25,50',
 //     });
 //     // expect(component).toBeTruthy();
 //     const test = component.calculateBreakdown();
@@ -71,12 +72,13 @@
 //         {
 //           id: 'wer',
 //           dosageToTake: 75,
-//           dosageUnit: '25,50',
+//           // dosageUnit: '25,50',
 //           frequencyType: 'tds',
 //           numDaysPerWeek: 1,
 //           numWeeksPerYear: 1,
 //         },
 //       ],
+//       dosageUnit: '25,50',
 //     });
 //     // expect(component).toBeTruthy();
 //     const test = component.calculateBreakdown();
