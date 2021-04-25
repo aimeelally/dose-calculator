@@ -11,6 +11,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppComponent } from './app.component';
 import { CalculatorComponent } from './calculator/calculator.component';
+import { CalendarModule } from './calendar/calendar.module';
 
 @NgModule({
   declarations: [AppComponent, CalculatorComponent],
@@ -25,6 +26,7 @@ import { CalculatorComponent } from './calculator/calculator.component';
     MatToolbarModule,
     MatCardModule,
     MatIconModule,
+    CalendarModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

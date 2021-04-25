@@ -1,12 +1,14 @@
+import { CalculatorService } from './calculator.service';
 import { Component, OnInit } from '@angular/core';
 import {
+  AbstractControl,
   FormArray,
   FormBuilder,
   FormControl,
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { Dosage } from './calculator.model';
+import { DosageCalendarWeek } from '../calendar/calendar.component';
 
 @Component({
   selector: 'app-calculator',
@@ -21,7 +23,12 @@ export class CalculatorComponent implements OnInit {
   public toDispense = '';
   public errMessage = '';
 
-  constructor(private fb: FormBuilder) {}
+  public calendarDosages: any;
+
+  constructor(
+    private fb: FormBuilder,
+    private readonly calculatorService: CalculatorService
+  ) {}
 
   ngOnInit() {
     this.initDosageForm();
@@ -29,6 +36,10 @@ export class CalculatorComponent implements OnInit {
 
   get getFormControls() {
     return this.dosageForm.get('dosages') as FormArray;
+  }
+
+  get dosageUnit() {
+    return this.dosageForm.get('dosageUnit') as AbstractControl;
   }
 
   public addRow() {
@@ -55,9 +66,8 @@ export class CalculatorComponent implements OnInit {
 
   private initFormRow(): FormGroup {
     return this.fb.group({
-      id: this.makeid(),
+      id: this.calculatorService.makeUniqueId(),
       dosageToTake: new FormControl(null, [Validators.required]),
-      // dosageUnit: new FormControl(null, [Validators.required]),
       frequencyType: new FormControl('od', [Validators.required]),
       numDaysPerWeek: new FormControl(1, [Validators.required]),
       numWeeksPerYear: new FormControl(1, [Validators.required]),
@@ -74,6 +84,10 @@ export class CalculatorComponent implements OnInit {
     this.errMessage = '';
     this.toDispense = '';
     const rowBreakdown = this.calculateBreakdown();
+    this.calendarDosages = this.calculatorService.generateCalendarData(
+      this.dosageForm,
+      this.dosageUnit
+    );
     this.resetRowValidation();
 
     if (this.hasInvalidRows(rowBreakdown)) {
@@ -117,145 +131,15 @@ export class CalculatorComponent implements OnInit {
 
   public calculateBreakdown(): { [key: string]: number }[] {
     this.toDispense = '';
-    const dosageUnit = this.dosageForm.get('dosageUnit');
-    return this.dosageForm.getRawValue().dosages.map((dosage) => {
-      const {
-        dosageToTake,
-        // dosageUnit,
-        frequencyType,
-        numDaysPerWeek,
-        numWeeksPerYear,
-      } = dosage;
-
-      if (!dosageUnit) {
-        return null;
-      }
-
-      const dosageUnitArray = dosageUnit.value
-        .split(/[ ,]+/)
-        .map((value) => parseFloat(value))
-        .filter((value) => value);
-
-      const optimumDosageBreakdown = this.getOptimum(dosageUnitArray)(
-        dosageToTake
-      );
-      let dosageBreakdown = this.calculateEachDosageBreakdown(
-        optimumDosageBreakdown
-      );
-
-      if (optimumDosageBreakdown.length === 0) {
-        // cannot calc dosage for this row, return null so row can be highlighted later
-        return null;
-      }
-
-      const frequencyPerWeek = this.calculateFrequencyPerWeek(
-        frequencyType,
-        numDaysPerWeek
-      );
-      for (var i in dosageBreakdown) {
-        dosageBreakdown[i] =
-          dosageBreakdown[i] * frequencyPerWeek * numWeeksPerYear;
-      }
-      return dosageBreakdown;
-    });
-  }
-
-  private calculateEachDosageBreakdown(breakdown: number[]) {
-    const obj = breakdown.reduce((pre, curr) => {
-      if (pre[curr]) {
-        pre[curr]++;
-      } else {
-        pre[curr] = 1;
-      }
-      return pre;
-    }, {});
-
-    return obj;
-  }
-
-  public calculate(): number {
-    return this.dosageForm
-      .getRawValue()
-      .dosages.reduce((accumulator, currentValue) => {
-        const {
-          dosageToTake,
-          dosageUnit,
-          frequencyType,
-          numDaysPerWeek,
-          numWeeksPerYear,
-        } = currentValue;
-
-        const rowDosage =
-          (dosageToTake / dosageUnit) *
-          this.calculateFrequencyPerWeek(frequencyType, numDaysPerWeek) *
-          numWeeksPerYear;
-
-        return accumulator + rowDosage;
-      }, 0);
-  }
-
-  private calculateFrequencyPerWeek(
-    frequencyType: string,
-    numDaysPerWeek: number
-  ): number {
-    return this.getFrequency(frequencyType) * numDaysPerWeek;
-  }
-
-  private getFrequency(frequencyType: string): number {
-    switch (frequencyType) {
-      case 'od':
-      case 'ow':
-        return 1;
-      case 'bd':
-        return 2;
-      case 'tds':
-        return 3;
-      case 'qds':
-        return 4;
-    }
+    return this.calculatorService.calculateBreakdown(
+      this.dosageForm,
+      this.dosageUnit
+    );
   }
 
   public deleteRow(index: number) {
     this.toDispense = '';
     this.errMessage = '';
     this.getFormControls.removeAt(index);
-  }
-
-  private makeid() {
-    const len = 6;
-    var result = '';
-    var characters =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for (var i = 0; i < len; i++) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-  }
-
-  public getOptimum(coins: number[]): (amount: number) => number[] {
-    let change;
-    let cache = {};
-    return (change = (amount: number) => {
-      if (!amount) return [];
-
-      if (cache[amount]) return cache[amount].slice(0);
-
-      let min = [];
-      let newMin;
-      let newAmount;
-
-      coins.forEach((coin) => {
-        if (
-          (newAmount = amount - coin) >= 0 &&
-          ((newMin = change(newAmount)).length < min.length - 1 ||
-            !min.length) &&
-          (newMin.length || !newAmount)
-        ) {
-          min = [coin].concat(newMin);
-        }
-      });
-      return (cache[amount] = min).slice(0);
-    });
   }
 }

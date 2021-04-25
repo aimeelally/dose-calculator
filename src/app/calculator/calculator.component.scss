@@ -27,10 +27,11 @@ button {
 }
 
 .container {
-  width: 800px;
+  width: 1200px;
   margin: auto;
   padding: 2em 1em 200px 1em;
   display: flex;
+  flex-direction: column;
   justify-content: flex-end;
 
   form {
@@ -80,6 +81,10 @@ tr.canValidate.ng-touched.ng-invalid {
   &:not(:disabled) mat-icon {
     color: #e51a41;
   }
+}
+
+.dosage-input {
+  max-width: 300px;
 }
 
 /////////////////

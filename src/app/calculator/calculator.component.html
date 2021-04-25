@@ -7,7 +7,7 @@
 <div class="container">
   <form [formGroup]="dosageForm" (ngSubmit)="onSubmit()" novalidate>
     <div class="btn-container">
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="dosage-input">
         <mat-label>Dosage strengths available</mat-label>
         <input
           matInput
@@ -38,12 +38,6 @@
       <thead>
         <tr class="mat-header-row">
           <th class="mat-header-cell">Dosage needed</th>
-          <!-- <th
-            class="mat-header-cell"
-            title="use comma separated values to include multiple available dosage strengths and calculator will return optimum combo"
-          >
-            Strength available
-          </th> -->
           <th class="mat-header-cell">Frequency</th>
           <th class="mat-header-cell">For N days</th>
           <th class="mat-header-cell">For N weeks</th>
@@ -72,14 +66,6 @@
                 <span matSuffix>mg</span>
               </mat-form-field>
             </td>
-
-            <!-- UNIT -->
-            <!-- <td class="mat-cell">
-              <mat-form-field>
-                <input matInput type="text" formControlName="dosageUnit" />
-                <span matSuffix>mg</span>
-              </mat-form-field>
-            </td> -->
 
             <!-- FREQUENCY -->
             <td class="mat-cell">
@@ -149,4 +135,6 @@
       </p>
     </ng-container>
   </form>
+
+  <app-calendar [dosages]="calendarDosages"></app-calendar>
 </div>
