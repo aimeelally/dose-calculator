@@ -22,6 +22,16 @@ export class CalendarComponent implements OnInit {
     dosagesByWeek: DosageCalendarWeek[];
   }[];
 
+  public weekdays: string[] = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
   ngOnInit() {}
 
   public getHeadersAsStringArr(dosage: any): string[] {

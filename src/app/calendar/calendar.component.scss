@@ -7,6 +7,11 @@
   padding-right: 2em;
 }
 
+mat-form-field {
+  max-width: 100px;
+  margin-bottom: -1em; //yuck
+}
+
 /////////////////
 table.mat-table {
   border-spacing: 0;
@@ -15,7 +20,7 @@ table.mat-table {
 th.mat-header-cell,
 td.mat-cell,
 td.mat-footer-cell {
-  padding: 1em;
+  padding: 0.5em;
   border-bottom-width: 1px;
   border-bottom-style: solid;
   border-left-width: 1px;

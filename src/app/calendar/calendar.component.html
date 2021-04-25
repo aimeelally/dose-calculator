@@ -1,4 +1,8 @@
-<div class="container">
+<ng-container *ngIf="dosages">
+  <h1>Dosage Breakdown</h1>
+</ng-container>
+
+<div class="container" *ngIf="dosages">
   <ng-container *ngFor="let round of dosages">
     <div>
       <h2>{{ round.title }}</h2>
@@ -81,7 +85,20 @@
             *ngFor="let header of getHeadersAsObj(week)"
             matColumnDef="{{ header.id }}"
           >
-            <th mat-header-cell *matHeaderCellDef>{{ header.title }}</th>
+            <th mat-header-cell *matHeaderCellDef>
+              <ng-container *ngIf="header.id !== 'header-dose'">
+                <mat-form-field appearance="standard">
+                  <mat-select [value]="header.title">
+                    <mat-option [value]="header.title">{{
+                      header.title
+                    }}</mat-option>
+                    <mat-option *ngFor="let day of weekdays" [value]="day">
+                      {{ day }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </ng-container>
+            </th>
           </ng-container>
 
           <!-- table header and col definitions -->
